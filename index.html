@@ -1,0 +1,2404 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AIGC Studio</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #f4f6fb;
+      --muted: #99a1b3;
+      --line: rgba(255, 255, 255, .12);
+      --line-strong: rgba(255, 255, 255, .20);
+      --panel: #080a0f;
+      --paper: rgba(18, 21, 30, .86);
+      --paper-solid: #12151e;
+      --surface: rgba(255, 255, 255, .06);
+      --surface-2: rgba(255, 255, 255, .10);
+      --surface-strong: rgba(255, 255, 255, .16);
+      --field: rgba(7, 10, 16, .78);
+      --field-focus: rgba(14, 18, 27, .96);
+      --accent: #ff5a2a;
+      --accent-2: #22d3b6;
+      --accent-3: #8b7dff;
+      --accent-soft: rgba(255, 90, 42, .16);
+      --dark: #ffffff;
+      --dark-2: #dce2ee;
+      --active-bg: #ffffff;
+      --active-ink: #11141c;
+      --brand-bg: linear-gradient(135deg, #ff5a2a, #8b7dff);
+      --brand-ink: #ffffff;
+      --hero-ink: #ffffff;
+      --hero-muted: rgba(255, 255, 255, .68);
+      --good: #2bdf91;
+      --warn: #f4b84d;
+      --bad: #ff5f68;
+      --checker-a: rgba(255, 255, 255, .06);
+      --checker-b: rgba(255, 255, 255, .02);
+      --overlay: rgba(4, 6, 10, .70);
+      --shadow: 0 24px 80px rgba(0, 0, 0, .34);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+
+    body[data-theme="light"] {
+      color-scheme: light;
+      --ink: #18191f;
+      --muted: #697081;
+      --line: rgba(20, 22, 30, .12);
+      --line-strong: rgba(20, 22, 30, .20);
+      --panel: #f5f7fb;
+      --paper: rgba(255, 255, 255, .88);
+      --paper-solid: #ffffff;
+      --surface: rgba(17, 20, 28, .05);
+      --surface-2: rgba(17, 20, 28, .08);
+      --surface-strong: rgba(17, 20, 28, .12);
+      --field: #ffffff;
+      --field-focus: #ffffff;
+      --accent: #ff5a2a;
+      --accent-2: #0f9f86;
+      --accent-3: #5d5de8;
+      --accent-soft: rgba(255, 90, 42, .12);
+      --dark: #151820;
+      --dark-2: #343948;
+      --active-bg: #151820;
+      --active-ink: #ffffff;
+      --brand-bg: #151820;
+      --brand-ink: #ffffff;
+      --hero-ink: #ffffff;
+      --hero-muted: rgba(255, 255, 255, .72);
+      --good: #11825c;
+      --warn: #b86d00;
+      --bad: #bd3030;
+      --checker-a: #eef1f6;
+      --checker-b: #f8f9fc;
+      --overlay: rgba(18, 20, 28, .46);
+      --shadow: 0 18px 58px rgba(26, 30, 40, .13);
+    }
+
+    body[data-theme="film"] {
+      color-scheme: dark;
+      --ink: #fff7e8;
+      --muted: #c7b99d;
+      --line: rgba(255, 232, 185, .14);
+      --line-strong: rgba(255, 232, 185, .24);
+      --panel: #11100d;
+      --paper: rgba(35, 30, 22, .88);
+      --paper-solid: #211d16;
+      --surface: rgba(255, 232, 185, .07);
+      --surface-2: rgba(255, 232, 185, .11);
+      --surface-strong: rgba(255, 232, 185, .18);
+      --field: rgba(13, 12, 10, .82);
+      --field-focus: rgba(23, 20, 16, .96);
+      --accent: #ff7a3d;
+      --accent-2: #d5c05a;
+      --accent-3: #54b8a7;
+      --accent-soft: rgba(255, 122, 61, .15);
+      --dark: #fff4df;
+      --dark-2: #f4ddad;
+      --active-bg: #fff4df;
+      --active-ink: #1c1710;
+      --brand-bg: linear-gradient(135deg, #ff7a3d, #d5c05a);
+      --brand-ink: #17110b;
+      --hero-ink: #fff7e8;
+      --hero-muted: rgba(255, 247, 232, .68);
+      --good: #7de0a9;
+      --warn: #ffc857;
+      --bad: #ff776e;
+      --checker-a: rgba(255, 232, 185, .07);
+      --checker-b: rgba(255, 232, 185, .02);
+      --overlay: rgba(17, 16, 13, .72);
+      --shadow: 0 24px 80px rgba(0, 0, 0, .36);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      background:
+        radial-gradient(circle at 14% -10%, var(--accent-soft), transparent 30%),
+        radial-gradient(circle at 88% 2%, rgba(34, 211, 182, .14), transparent 28%),
+        linear-gradient(180deg, rgba(255, 255, 255, .03), transparent 34%),
+        var(--panel);
+      color: var(--ink);
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: minmax(190px, 1fr) auto minmax(220px, 1fr);
+      gap: 16px;
+      align-items: center;
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--line);
+      background: color-mix(in srgb, var(--panel) 82%, transparent);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--brand-bg);
+      color: var(--brand-ink);
+      font-weight: 800;
+      letter-spacing: 0;
+      box-shadow: 0 12px 34px color-mix(in srgb, var(--accent) 28%, transparent);
+      flex: 0 0 auto;
+    }
+
+    .brand-title {
+      min-width: 0;
+    }
+
+    .brand-title strong {
+      display: block;
+      font-size: 16px;
+      line-height: 1.1;
+    }
+
+    .brand-title span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tabs {
+      display: inline-grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      padding: 4px;
+      background: var(--surface);
+      border-radius: 8px;
+      border: 1px solid var(--line);
+    }
+
+    .tab {
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      padding: 10px 18px;
+      min-width: 118px;
+      min-height: 42px;
+      font-weight: 700;
+    }
+
+    .tab.active {
+      background: var(--active-bg);
+      color: var(--active-ink);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, .22);
+    }
+
+    .top-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .theme-select {
+      width: auto;
+      min-width: 116px;
+      height: 38px;
+      padding: 0 34px 0 12px;
+      border-radius: 8px;
+      color: var(--ink);
+      background: var(--surface);
+      border: 1px solid var(--line);
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 38px;
+      padding: 0 12px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--bad);
+      flex: 0 0 auto;
+    }
+
+    .dot.ready {
+      background: var(--good);
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: minmax(360px, 460px) minmax(0, 1fr);
+      gap: 22px;
+      padding: 22px 24px 30px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .composer {
+      position: sticky;
+      top: 86px;
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-head h1,
+    .panel-head h2 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .panel-head small {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .section {
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section:last-child {
+      border-bottom: 0;
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .section-title h3 {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.2;
+    }
+
+    .grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .grid.two {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .grid.three {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    label.field {
+      display: grid;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    .label-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--dark-2);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      min-width: 0;
+      border: 1px solid var(--line);
+      background: var(--field);
+      color: var(--ink);
+      border-radius: 8px;
+      outline: none;
+      transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+
+    input,
+    select {
+      height: 42px;
+      padding: 0 12px;
+    }
+
+    textarea {
+      min-height: 132px;
+      resize: vertical;
+      padding: 12px;
+      line-height: 1.5;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: color-mix(in srgb, var(--muted) 72%, transparent);
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      background: var(--field-focus);
+      border-color: color-mix(in srgb, var(--accent) 72%, transparent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    .segmented {
+      display: grid;
+      gap: 4px;
+      padding: 4px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .segmented.image-modes {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .segmented.video-modes {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .segmented button {
+      min-height: 38px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 800;
+      padding: 8px 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .segmented button.active {
+      background: var(--active-bg);
+      color: var(--active-ink);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, .20);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--ink);
+      font-weight: 800;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
+    }
+
+    .btn:hover {
+      border-color: var(--line-strong);
+      transform: translateY(-1px);
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent-3) 72%, var(--accent)));
+      color: #fff;
+      border-color: color-mix(in srgb, var(--accent) 70%, white 8%);
+      box-shadow: 0 14px 34px color-mix(in srgb, var(--accent) 32%, transparent);
+    }
+
+    .btn.dark {
+      background: var(--active-bg);
+      color: var(--active-ink);
+      border-color: var(--active-bg);
+    }
+
+    .btn.ghost {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .btn.small {
+      min-height: 34px;
+      padding: 0 10px;
+      font-size: 12px;
+    }
+
+    .btn:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .actions .btn.primary {
+      flex: 1 1 170px;
+    }
+
+    .inline-check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--dark-2);
+      font-size: 13px;
+      font-weight: 700;
+      min-height: 28px;
+    }
+
+    .inline-check input {
+      width: 17px;
+      height: 17px;
+      min-width: 17px;
+      accent-color: var(--accent);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .workspace {
+      display: grid;
+      gap: 20px;
+      min-width: 0;
+    }
+
+    .hero-strip {
+      min-height: 158px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: end;
+      padding: 22px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 78% 16%, color-mix(in srgb, var(--accent-3) 44%, transparent), transparent 26%),
+        linear-gradient(135deg, color-mix(in srgb, var(--paper-solid) 88%, black), color-mix(in srgb, var(--panel) 82%, var(--accent) 18%)),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, .07) 0, rgba(255, 255, 255, .07) 1px, transparent 1px, transparent 74px);
+      color: var(--hero-ink);
+      border-radius: 8px;
+      position: relative;
+    }
+
+    .hero-strip::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0;
+      height: 6px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+    }
+
+    .hero-strip h2 {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      font-size: clamp(30px, 4vw, 58px);
+      line-height: .98;
+      max-width: 780px;
+      letter-spacing: 0;
+    }
+
+    .hero-kicker {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .hero-kicker span {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 0 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, .16);
+      background: rgba(255, 255, 255, .08);
+      color: rgba(255, 255, 255, .82);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .hero-strip p {
+      position: relative;
+      z-index: 1;
+      margin: 12px 0 0;
+      color: var(--hero-muted);
+      max-width: 720px;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .metric-row {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(82px, 1fr));
+      gap: 8px;
+      width: min(360px, 38vw);
+    }
+
+    .metric {
+      border: 1px solid rgba(255, 255, 255, .14);
+      background: rgba(255, 255, 255, .08);
+      border-radius: 8px;
+      padding: 10px;
+      min-height: 72px;
+      backdrop-filter: blur(12px);
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .metric span {
+      display: block;
+      margin-top: 8px;
+      color: rgba(255, 255, 255, .68);
+      font-size: 12px;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+
+    .result-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--paper-solid);
+      min-width: 0;
+      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .result-card:hover {
+      border-color: var(--line-strong);
+      box-shadow: var(--shadow);
+      transform: translateY(-2px);
+    }
+
+    .result-media {
+      aspect-ratio: 4 / 3;
+      display: grid;
+      place-items: center;
+      background:
+        linear-gradient(45deg, var(--checker-a) 25%, transparent 25%),
+        linear-gradient(-45deg, var(--checker-a) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, var(--checker-a) 75%),
+        linear-gradient(-45deg, transparent 75%, var(--checker-a) 75%),
+        var(--checker-b);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+      overflow: hidden;
+    }
+
+    .result-media img,
+    .result-media video {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+      background: #111;
+    }
+
+    .result-body {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+    }
+
+    .result-title {
+      min-width: 0;
+      font-size: 13px;
+      font-weight: 800;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .result-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--dark-2);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .chip.good {
+      color: var(--good);
+      background: rgba(17, 130, 92, .10);
+      border-color: rgba(17, 130, 92, .18);
+    }
+
+    .chip.warn {
+      color: var(--warn);
+      background: rgba(184, 109, 0, .10);
+      border-color: rgba(184, 109, 0, .18);
+    }
+
+    .chip.bad {
+      color: var(--bad);
+      background: rgba(189, 48, 48, .10);
+      border-color: rgba(189, 48, 48, .18);
+    }
+
+    .empty {
+      display: grid;
+      place-items: center;
+      min-height: 320px;
+      padding: 36px 18px;
+      border: 1px dashed var(--line-strong);
+      border-radius: 8px;
+      color: var(--muted);
+      text-align: center;
+      background: var(--surface);
+    }
+
+    .empty strong {
+      display: block;
+      color: var(--dark-2);
+      font-size: 16px;
+      margin-bottom: 6px;
+    }
+
+    .task-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .task-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid var(--line);
+      background: var(--paper-solid);
+      border-radius: 8px;
+      min-width: 0;
+    }
+
+    .task-main {
+      min-width: 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    .task-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .task-title strong {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 13px;
+    }
+
+    .progress {
+      height: 7px;
+      overflow: hidden;
+      background: var(--surface-2);
+      border-radius: 99px;
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transition: width .25s ease;
+    }
+
+    .task-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    details {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      overflow: hidden;
+    }
+
+    summary {
+      cursor: pointer;
+      padding: 12px;
+      font-weight: 800;
+      color: var(--dark-2);
+      list-style-position: inside;
+    }
+
+    pre {
+      margin: 0;
+      padding: 12px;
+      max-height: 360px;
+      overflow: auto;
+      background: color-mix(in srgb, var(--panel) 88%, black);
+      color: var(--ink);
+      font-size: 12px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      z-index: 80;
+      max-width: min(520px, calc(100vw - 32px));
+      transform: translateX(-50%) translateY(18px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease, transform .18s ease;
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: var(--active-bg);
+      color: var(--active-ink);
+      box-shadow: var(--shadow);
+      font-size: 13px;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .dialog-backdrop {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      z-index: 60;
+      background: var(--overlay);
+    }
+
+    .dialog {
+      width: min(620px, 100%);
+      max-height: min(760px, calc(100vh - 36px));
+      overflow: auto;
+      background: var(--paper-solid);
+      border-radius: 8px;
+      border: 1px solid var(--line-strong);
+      box-shadow: 0 28px 80px rgba(0, 0, 0, .36);
+    }
+
+    .dialog .panel-head {
+      position: sticky;
+      top: 0;
+      background: var(--paper-solid);
+      z-index: 1;
+    }
+
+    .kbd-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .drop-zone {
+      position: relative;
+      display: grid;
+      gap: 10px;
+      min-height: 92px;
+      border: 1px dashed var(--line-strong);
+      border-radius: 8px;
+      padding: 12px;
+      background: var(--surface);
+    }
+
+    .drop-zone input[type="file"] {
+      height: auto;
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+
+    .thumb-row {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .thumb {
+      width: 68px;
+      height: 68px;
+      flex: 0 0 auto;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      object-fit: cover;
+      background: var(--surface-2);
+    }
+
+    @media (max-width: 1120px) {
+      .topbar {
+        grid-template-columns: 1fr;
+      }
+
+      .top-actions {
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .composer {
+        position: static;
+      }
+
+      .hero-strip {
+        grid-template-columns: 1fr;
+      }
+
+      .metric-row {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .topbar {
+        padding: 12px;
+      }
+
+      .shell {
+        padding: 12px;
+      }
+
+      .tabs,
+      .segmented.video-modes,
+      .grid.two,
+      .grid.three {
+        grid-template-columns: 1fr;
+      }
+
+      .tab,
+      .segmented button {
+        min-width: 0;
+      }
+
+      .hero-strip {
+        padding: 18px;
+      }
+
+      .hero-strip h2 {
+        font-size: 34px;
+      }
+
+      .metric-row {
+        grid-template-columns: 1fr;
+      }
+
+      .task-item {
+        grid-template-columns: 1fr;
+      }
+
+      .task-actions {
+        justify-content: flex-start;
+      }
+
+      .status-pill {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .theme-select,
+      .top-actions .btn,
+      .status-pill {
+        flex: 1 1 auto;
+      }
+    }
+  </style>
+</head>
+<body data-theme="midnight">
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">AI</div>
+        <div class="brand-title">
+          <strong>AIGC Studio</strong>
+          <span>Agnes Image 2.1 Flash / Agnes Video V2.0</span>
+        </div>
+      </div>
+
+      <nav class="tabs" aria-label="创作类型">
+        <button class="tab active" type="button" data-tab="image">图片创作</button>
+        <button class="tab" type="button" data-tab="video">视频创作</button>
+      </nav>
+
+      <div class="top-actions">
+        <select class="theme-select" id="themeSelect" aria-label="主题">
+          <option value="midnight">午夜</option>
+          <option value="light">晨光</option>
+          <option value="film">胶片</option>
+        </select>
+        <span class="status-pill" id="tokenStatus"><i class="dot" aria-hidden="true"></i><span>未配置令牌</span></span>
+        <button class="btn dark" type="button" id="openSettings">令牌设置</button>
+      </div>
+    </header>
+
+    <main class="shell">
+      <aside class="panel composer">
+        <div class="panel-head">
+          <div>
+            <h1 id="composerTitle">图片创作</h1>
+            <small id="composerSubtitle">agnes-image-2.1-flash</small>
+          </div>
+          <button class="btn small ghost" type="button" id="resetForm">重置</button>
+        </div>
+
+        <form id="imageForm" class="creator-form">
+          <section class="section">
+            <div class="section-title">
+              <h3>生成模式</h3>
+            </div>
+            <div class="segmented image-modes" data-group="imageMode">
+              <button class="active" type="button" data-value="text">文生图</button>
+              <button type="button" data-value="image">图生图</button>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="grid">
+              <label class="field">
+                <span class="label-line">提示词 <span class="hint">prompt</span></span>
+                <textarea id="imagePrompt" placeholder="A luminous floating city above a misty canyon at sunrise, cinematic realism"></textarea>
+              </label>
+              <div id="imageInputsBlock" class="grid hidden">
+                <label class="field">
+                  <span class="label-line">输入图片 URL <span class="hint">每行一个</span></span>
+                  <textarea id="imageUrls" placeholder="https://example.com/input-image.png"></textarea>
+                </label>
+                <div class="drop-zone">
+                  <span class="label-line">本地图片 <span class="hint">转为 Data URI</span></span>
+                  <input id="imageFiles" type="file" accept="image/*" multiple>
+                  <div class="thumb-row" id="imageThumbs"></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="grid two">
+              <label class="field">
+                <span class="label-line">图片尺寸 <span class="hint">size</span></span>
+                <select id="imageSizePreset">
+                  <option value="1024x768">1024 x 768</option>
+                  <option value="768x1024">768 x 1024</option>
+                  <option value="1024x1024">1024 x 1024</option>
+                  <option value="1280x720">1280 x 720</option>
+                  <option value="720x1280">720 x 1280</option>
+                  <option value="custom">自定义</option>
+                </select>
+              </label>
+              <label class="field">
+                <span class="label-line">返回格式 <span class="hint">response</span></span>
+                <select id="imageResponseFormat">
+                  <option value="url">URL</option>
+                  <option value="b64_json">Base64</option>
+                </select>
+              </label>
+            </div>
+            <div class="grid two hidden" id="imageCustomSize">
+              <label class="field">
+                <span class="label-line">宽度</span>
+                <input id="imageWidth" type="number" min="128" step="8" value="1024">
+              </label>
+              <label class="field">
+                <span class="label-line">高度</span>
+                <input id="imageHeight" type="number" min="128" step="8" value="768">
+              </label>
+            </div>
+          </section>
+
+          <section class="section">
+            <details>
+              <summary>高级参数</summary>
+              <div class="section">
+                <label class="field">
+                  <span class="label-line">extra_body JSON</span>
+                  <textarea id="imageExtraBody" placeholder='{"response_format":"url"}'></textarea>
+                </label>
+              </div>
+            </details>
+          </section>
+
+          <section class="section">
+            <div class="actions">
+              <button class="btn primary" type="submit" id="generateImage">生成图片</button>
+              <button class="btn" type="button" id="copyImagePayload">复制请求体</button>
+            </div>
+          </section>
+        </form>
+
+        <form id="videoForm" class="creator-form hidden">
+          <section class="section">
+            <div class="section-title">
+              <h3>生成模式</h3>
+            </div>
+            <div class="segmented video-modes" data-group="videoMode">
+              <button class="active" type="button" data-value="text">文生视频</button>
+              <button type="button" data-value="image">图生视频</button>
+              <button type="button" data-value="multi">多图视频</button>
+              <button type="button" data-value="keyframes">关键帧</button>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="grid">
+              <label class="field">
+                <span class="label-line">提示词 <span class="hint">prompt</span></span>
+                <textarea id="videoPrompt" placeholder="A cinematic shot of a cat walking on the beach at sunset, soft ocean waves, warm golden lighting, realistic motion"></textarea>
+              </label>
+              <label class="field">
+                <span class="label-line">反向提示词 <span class="hint">negative_prompt</span></span>
+                <textarea id="negativePrompt" placeholder="low quality, flicker, distorted motion"></textarea>
+              </label>
+              <label class="field hidden" id="videoSingleImageBlock">
+                <span class="label-line">输入图片 URL <span class="hint">image</span></span>
+                <input id="videoImageUrl" type="url" placeholder="https://example.com/image.png">
+              </label>
+              <label class="field hidden" id="videoMultiImageBlock">
+                <span class="label-line">参考图片 URL <span class="hint">每行一个</span></span>
+                <textarea id="videoImageUrls" placeholder="https://example.com/image1.png&#10;https://example.com/image2.png"></textarea>
+              </label>
+              <div class="drop-zone hidden" id="videoFilesBlock">
+                <span class="label-line">本地参考图 <span class="hint">转为 Data URI Base64</span></span>
+                <input id="videoFiles" type="file" accept="image/*" multiple>
+                <div class="thumb-row" id="videoThumbs"></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <div class="grid two">
+              <label class="field">
+                <span class="label-line">分辨率</span>
+                <select id="videoSizePreset">
+                  <option value="832x480">832 x 480 快速</option>
+                  <option value="1152x768">1152 x 768</option>
+                  <option value="1280x720">1280 x 720</option>
+                  <option value="720x1280">720 x 1280</option>
+                  <option value="1024x1024">1024 x 1024</option>
+                  <option value="1024x768">1024 x 768</option>
+                  <option value="768x1024">768 x 1024</option>
+                  <option value="1920x1080">1920 x 1080</option>
+                  <option value="1080x1920">1080 x 1920</option>
+                  <option value="custom">自定义</option>
+                </select>
+              </label>
+              <label class="field">
+                <span class="label-line">时长预设</span>
+                <select id="durationPreset">
+                  <option value="121:24">约 5 秒</option>
+                  <option value="81:24">约 3 秒</option>
+                  <option value="241:24">约 10 秒</option>
+                  <option value="441:24">约 18 秒</option>
+                  <option value="custom">自定义</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="grid two hidden" id="videoCustomSize">
+              <label class="field">
+                <span class="label-line">宽度 <span class="hint">width</span></span>
+                <input id="videoWidth" type="number" min="128" step="8" value="1152">
+              </label>
+              <label class="field">
+                <span class="label-line">高度 <span class="hint">height</span></span>
+                <input id="videoHeight" type="number" min="128" step="8" value="768">
+              </label>
+            </div>
+
+            <div class="grid three" id="videoTimingGrid">
+              <label class="field">
+                <span class="label-line">帧数 <span class="hint">num_frames</span></span>
+                <input id="numFrames" type="number" min="1" max="441" step="8" value="121">
+              </label>
+              <label class="field">
+                <span class="label-line">帧率 <span class="hint">frame_rate</span></span>
+                <input id="frameRate" type="number" min="1" max="60" step="1" value="24">
+              </label>
+              <label class="field">
+                <span class="label-line">推理步数 <span class="hint">steps</span></span>
+                <input id="inferenceSteps" type="number" min="1" step="1" placeholder="可选">
+              </label>
+            </div>
+          </section>
+
+          <section class="section">
+            <details>
+              <summary>高级参数</summary>
+              <div class="section grid">
+                <label class="field">
+                  <span class="label-line">随机种子 <span class="hint">seed</span></span>
+                  <input id="seed" type="number" step="1" placeholder="可选">
+                </label>
+                <label class="field">
+                  <span class="label-line">顶层模式 <span class="hint">mode</span></span>
+                  <input id="videoModeField" type="text" placeholder="ti2vid / keyframes / 可选">
+                </label>
+                <label class="field">
+                  <span class="label-line">extra_body JSON</span>
+                  <textarea id="videoExtraBody" placeholder='{"mode":"keyframes"}'></textarea>
+                </label>
+              </div>
+            </details>
+          </section>
+
+          <section class="section">
+            <div class="actions">
+              <button class="btn primary" type="submit" id="generateVideo">创建视频任务</button>
+              <button class="btn" type="button" id="copyVideoPayload">复制请求体</button>
+            </div>
+          </section>
+        </form>
+      </aside>
+
+      <section class="workspace">
+        <div class="hero-strip">
+          <div>
+            <div class="hero-kicker">
+              <span>Creator Studio</span>
+              <span>Image / Video</span>
+            </div>
+            <h2 id="heroTitle">图像与视频生成工作台</h2>
+            <p id="heroCopy">输入 Agnes API Key 后即可在浏览器中发起图片生成、图生图、文生视频、图生视频、多图视频和关键帧视频任务。</p>
+          </div>
+          <div class="metric-row">
+            <div class="metric">
+              <strong id="imageCount">0</strong>
+              <span>图片结果</span>
+            </div>
+            <div class="metric">
+              <strong id="videoCount">0</strong>
+              <span>视频结果</span>
+            </div>
+            <div class="metric">
+              <strong id="taskCount">0</strong>
+              <span>视频任务</span>
+            </div>
+          </div>
+        </div>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>生成结果</h2>
+              <small id="resultSubtitle">图片和视频会保存在当前浏览器</small>
+            </div>
+            <div class="actions">
+              <button class="btn small" type="button" id="clearResults">清空结果</button>
+            </div>
+          </div>
+          <div class="section">
+            <div id="results" class="result-grid"></div>
+            <div id="emptyResults" class="empty">
+              <div>
+                <strong>等待第一次生成</strong>
+                <span>结果会显示在这里</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>视频任务</h2>
+              <small>queued / in_progress / completed / failed</small>
+            </div>
+            <div class="actions">
+              <button class="btn small" type="button" id="pollAllTasks">刷新任务</button>
+            </div>
+          </div>
+          <div class="section grid">
+            <div class="grid two">
+              <label class="field">
+                <span class="label-line">video_id</span>
+                <input id="manualVideoId" type="text" placeholder="video_xxx">
+              </label>
+              <label class="field">
+                <span class="label-line">task_id</span>
+                <input id="manualTaskId" type="text" placeholder="task_xxx">
+              </label>
+            </div>
+            <div class="actions">
+              <button class="btn" type="button" id="queryVideoId">查询 video_id</button>
+              <button class="btn" type="button" id="queryTaskId">查询 task_id</button>
+            </div>
+            <div id="tasks" class="task-list"></div>
+            <div id="emptyTasks" class="empty">
+              <div>
+                <strong>暂无视频任务</strong>
+                <span>创建任务后会自动轮询</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>请求预览</h2>
+              <small id="payloadSubtitle">当前表单对应的 JSON</small>
+            </div>
+            <div class="actions">
+              <a class="btn small" href="https://agnes-ai.com/zh-Hans/docs/agnes-image-21-flash" target="_blank" rel="noreferrer">图片文档</a>
+              <a class="btn small" href="https://agnes-ai.com/zh-Hans/docs/agnes-video-v20" target="_blank" rel="noreferrer">视频文档</a>
+            </div>
+          </div>
+          <pre id="payloadPreview">{}</pre>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="dialog-backdrop hidden" id="settingsDialog" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="dialog">
+      <div class="panel-head">
+        <div>
+          <h2 id="settingsTitle">令牌设置</h2>
+          <small>Authorization: Bearer</small>
+        </div>
+        <button class="btn small ghost" type="button" id="closeSettings">关闭</button>
+      </div>
+      <div class="section grid">
+        <label class="field">
+          <span class="label-line">Agnes API Key</span>
+          <input id="apiKey" type="password" autocomplete="off" placeholder="sk-...">
+        </label>
+        <label class="field">
+          <span class="label-line">API Base URL</span>
+          <input id="apiBase" type="url" value="https://apihub.agnes-ai.com">
+        </label>
+        <label class="inline-check">
+          <input id="rememberToken" type="checkbox" checked>
+          <span>保存到当前浏览器</span>
+        </label>
+        <div class="kbd-row">
+          <button class="btn primary" type="button" id="saveSettings">保存设置</button>
+          <button class="btn" type="button" id="clearToken">清除令牌</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const IMAGE_MODEL = "agnes-image-2.1-flash";
+    const VIDEO_MODEL = "agnes-video-v2.0";
+    const DEFAULT_BASE = "https://apihub.agnes-ai.com";
+    const STORAGE_KEY = "aigcStudioState.v1";
+    const POLL_INTERVAL = 5000;
+
+    const state = {
+      activeTab: "image",
+      imageMode: "text",
+      videoMode: "text",
+      theme: "midnight",
+      token: "",
+      apiBase: DEFAULT_BASE,
+      imageDataUris: [],
+      videoDataUris: [],
+      results: [],
+      tasks: [],
+      polling: new Map()
+    };
+
+    const $ = (selector) => document.querySelector(selector);
+    const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+
+    const els = {
+      tabs: $$(".tab"),
+      themeSelect: $("#themeSelect"),
+      tokenStatus: $("#tokenStatus"),
+      openSettings: $("#openSettings"),
+      closeSettings: $("#closeSettings"),
+      settingsDialog: $("#settingsDialog"),
+      apiKey: $("#apiKey"),
+      apiBase: $("#apiBase"),
+      rememberToken: $("#rememberToken"),
+      saveSettings: $("#saveSettings"),
+      clearToken: $("#clearToken"),
+      composerTitle: $("#composerTitle"),
+      composerSubtitle: $("#composerSubtitle"),
+      resetForm: $("#resetForm"),
+      imageForm: $("#imageForm"),
+      videoForm: $("#videoForm"),
+      imagePrompt: $("#imagePrompt"),
+      imageUrls: $("#imageUrls"),
+      imageFiles: $("#imageFiles"),
+      imageThumbs: $("#imageThumbs"),
+      imageInputsBlock: $("#imageInputsBlock"),
+      imageSizePreset: $("#imageSizePreset"),
+      imageCustomSize: $("#imageCustomSize"),
+      imageWidth: $("#imageWidth"),
+      imageHeight: $("#imageHeight"),
+      imageResponseFormat: $("#imageResponseFormat"),
+      imageExtraBody: $("#imageExtraBody"),
+      copyImagePayload: $("#copyImagePayload"),
+      videoPrompt: $("#videoPrompt"),
+      negativePrompt: $("#negativePrompt"),
+      videoSingleImageBlock: $("#videoSingleImageBlock"),
+      videoMultiImageBlock: $("#videoMultiImageBlock"),
+      videoImageUrl: $("#videoImageUrl"),
+      videoImageUrls: $("#videoImageUrls"),
+      videoFilesBlock: $("#videoFilesBlock"),
+      videoFiles: $("#videoFiles"),
+      videoThumbs: $("#videoThumbs"),
+      videoSizePreset: $("#videoSizePreset"),
+      videoCustomSize: $("#videoCustomSize"),
+      videoWidth: $("#videoWidth"),
+      videoHeight: $("#videoHeight"),
+      durationPreset: $("#durationPreset"),
+      numFrames: $("#numFrames"),
+      frameRate: $("#frameRate"),
+      inferenceSteps: $("#inferenceSteps"),
+      seed: $("#seed"),
+      videoModeField: $("#videoModeField"),
+      videoExtraBody: $("#videoExtraBody"),
+      copyVideoPayload: $("#copyVideoPayload"),
+      results: $("#results"),
+      emptyResults: $("#emptyResults"),
+      tasks: $("#tasks"),
+      emptyTasks: $("#emptyTasks"),
+      imageCount: $("#imageCount"),
+      videoCount: $("#videoCount"),
+      taskCount: $("#taskCount"),
+      clearResults: $("#clearResults"),
+      pollAllTasks: $("#pollAllTasks"),
+      manualVideoId: $("#manualVideoId"),
+      manualTaskId: $("#manualTaskId"),
+      queryVideoId: $("#queryVideoId"),
+      queryTaskId: $("#queryTaskId"),
+      payloadPreview: $("#payloadPreview"),
+      payloadSubtitle: $("#payloadSubtitle"),
+      resultSubtitle: $("#resultSubtitle"),
+      heroTitle: $("#heroTitle"),
+      heroCopy: $("#heroCopy"),
+      toast: $("#toast")
+    };
+
+    function loadState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        state.token = saved.token || "";
+        state.apiBase = saved.apiBase || DEFAULT_BASE;
+        state.theme = saved.theme || "midnight";
+        state.results = Array.isArray(saved.results) ? saved.results : [];
+        state.tasks = Array.isArray(saved.tasks) ? saved.tasks : [];
+      } catch (error) {
+        console.warn(error);
+      }
+    }
+
+    function saveState() {
+      const payload = {
+        token: state.token,
+        apiBase: state.apiBase,
+        theme: state.theme,
+        results: state.results.slice(0, 40),
+        tasks: state.tasks.slice(0, 40)
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    }
+
+    function applyTheme(theme) {
+      state.theme = theme || "midnight";
+      document.body.dataset.theme = state.theme;
+      if (els.themeSelect) els.themeSelect.value = state.theme;
+    }
+
+    function showToast(message) {
+      els.toast.textContent = message;
+      els.toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => els.toast.classList.remove("show"), 2600);
+    }
+
+    function normalizeBaseUrl(value) {
+      return (value || DEFAULT_BASE).replace(/\/+$/, "");
+    }
+
+    function requireToken() {
+      if (!state.token) {
+        openSettings();
+        throw new Error("请先配置 Agnes API Key");
+      }
+      return state.token;
+    }
+
+    function updateTokenStatus() {
+      const dot = els.tokenStatus.querySelector(".dot");
+      const text = els.tokenStatus.querySelector("span");
+      dot.classList.toggle("ready", Boolean(state.token));
+      text.textContent = state.token ? "令牌已配置" : "未配置令牌";
+      els.apiKey.value = state.token;
+      els.apiBase.value = state.apiBase || DEFAULT_BASE;
+    }
+
+    function openSettings() {
+      els.settingsDialog.classList.remove("hidden");
+      window.setTimeout(() => els.apiKey.focus(), 0);
+    }
+
+    function closeSettings() {
+      els.settingsDialog.classList.add("hidden");
+    }
+
+    function setActiveTab(tab) {
+      state.activeTab = tab;
+      els.tabs.forEach((button) => button.classList.toggle("active", button.dataset.tab === tab));
+      els.imageForm.classList.toggle("hidden", tab !== "image");
+      els.videoForm.classList.toggle("hidden", tab !== "video");
+      els.composerTitle.textContent = tab === "image" ? "图片创作" : "视频创作";
+      els.composerSubtitle.textContent = tab === "image" ? IMAGE_MODEL : VIDEO_MODEL;
+      els.payloadSubtitle.textContent = tab === "image" ? "POST /v1/images/generations" : "POST /v1/videos";
+      els.resultSubtitle.textContent = tab === "image" ? "图片结果会显示在这里" : "视频完成后可播放和下载";
+      els.heroTitle.textContent = tab === "image" ? "图片生成与图生图" : "视频任务与结果轮询";
+      els.heroCopy.textContent = tab === "image"
+        ? "支持 URL / Base64 输出、本地图片转 Data URI、公共 URL 图生图，以及 extra_body 高级参数。"
+        : "支持文生视频、图生视频、多图视频、关键帧动画、时长帧率、分辨率、种子和反向提示词。";
+      renderPayloadPreview();
+    }
+
+    function setSegment(group, value) {
+      state[group] = value;
+      $$(`[data-group="${group}"] button`).forEach((button) => {
+        button.classList.toggle("active", button.dataset.value === value);
+      });
+      if (group === "imageMode") updateImageMode();
+      if (group === "videoMode") updateVideoMode();
+      renderPayloadPreview();
+    }
+
+    function updateImageMode() {
+      els.imageInputsBlock.classList.toggle("hidden", state.imageMode !== "image");
+    }
+
+    function updateVideoMode() {
+      const needsSingle = state.videoMode === "image";
+      const needsMulti = state.videoMode === "multi" || state.videoMode === "keyframes";
+      els.videoSingleImageBlock.classList.toggle("hidden", !needsSingle);
+      els.videoMultiImageBlock.classList.toggle("hidden", !needsMulti);
+      els.videoFilesBlock.classList.toggle("hidden", state.videoMode === "text");
+      if (state.videoMode === "keyframes" && !els.videoModeField.value.trim()) {
+        els.videoModeField.value = "keyframes";
+      }
+      if (state.videoMode !== "keyframes" && els.videoModeField.value.trim() === "keyframes") {
+        els.videoModeField.value = "";
+      }
+    }
+
+    function updateCustomControls() {
+      els.imageCustomSize.classList.toggle("hidden", els.imageSizePreset.value !== "custom");
+      els.videoCustomSize.classList.toggle("hidden", els.videoSizePreset.value !== "custom");
+      if (els.durationPreset.value !== "custom") {
+        const [frames, rate] = els.durationPreset.value.split(":");
+        els.numFrames.value = frames;
+        els.frameRate.value = rate;
+      }
+      renderPayloadPreview();
+    }
+
+    function parseJsonObject(value, label) {
+      const trimmed = value.trim();
+      if (!trimmed) return {};
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+          throw new Error(`${label} 必须是 JSON 对象`);
+        }
+        return parsed;
+      } catch (error) {
+        throw new Error(`${label} 格式无效：${error.message}`);
+      }
+    }
+
+    function lines(value) {
+      return value.split(/\n+/).map((item) => item.trim()).filter(Boolean);
+    }
+
+    function imageSize() {
+      if (els.imageSizePreset.value === "custom") {
+        return `${Number(els.imageWidth.value)}x${Number(els.imageHeight.value)}`;
+      }
+      return els.imageSizePreset.value;
+    }
+
+    function videoSize() {
+      if (els.videoSizePreset.value === "custom") {
+        return [Number(els.videoWidth.value), Number(els.videoHeight.value)];
+      }
+      return els.videoSizePreset.value.split("x").map(Number);
+    }
+
+    function buildImagePayload() {
+      const prompt = els.imagePrompt.value.trim();
+      if (!prompt) throw new Error("请填写图片提示词");
+      const format = els.imageResponseFormat.value;
+      const extraBody = parseJsonObject(els.imageExtraBody.value, "图片 extra_body");
+      const payload = {
+        model: IMAGE_MODEL,
+        prompt,
+        size: imageSize()
+      };
+
+      if (state.imageMode === "image") {
+        const inputImages = [...lines(els.imageUrls.value), ...state.imageDataUris];
+        if (!inputImages.length) throw new Error("图生图需要至少一张输入图片");
+        payload.extra_body = {
+          ...extraBody,
+          image: inputImages,
+          response_format: format
+        };
+      } else if (format === "b64_json") {
+        payload.return_base64 = true;
+        if (Object.keys(extraBody).length) payload.extra_body = extraBody;
+      } else {
+        payload.extra_body = {
+          ...extraBody,
+          response_format: "url"
+        };
+      }
+
+      return payload;
+    }
+
+    function validateVideoTiming(numFrames, frameRate) {
+      if (!Number.isFinite(numFrames) || numFrames < 1 || numFrames > 441) {
+        throw new Error("num_frames 必须在 1 到 441 之间");
+      }
+      if ((numFrames - 1) % 8 !== 0) {
+        throw new Error("num_frames 必须遵循 8n + 1 规则");
+      }
+      if (!Number.isFinite(frameRate) || frameRate < 1 || frameRate > 60) {
+        throw new Error("frame_rate 必须在 1 到 60 之间");
+      }
+    }
+
+    function buildVideoPayload() {
+      const prompt = els.videoPrompt.value.trim();
+      if (!prompt) throw new Error("请填写视频提示词");
+      const [width, height] = videoSize();
+      const numFrames = Number(els.numFrames.value);
+      const frameRate = Number(els.frameRate.value);
+      validateVideoTiming(numFrames, frameRate);
+
+      const payload = {
+        model: VIDEO_MODEL,
+        prompt,
+        height,
+        width,
+        num_frames: numFrames,
+        frame_rate: frameRate
+      };
+
+      const negativePrompt = els.negativePrompt.value.trim();
+      const inferenceSteps = Number(els.inferenceSteps.value);
+      const seed = Number(els.seed.value);
+      const mode = els.videoModeField.value.trim();
+      const extraBody = parseJsonObject(els.videoExtraBody.value, "视频 extra_body");
+
+      if (negativePrompt) payload.negative_prompt = negativePrompt;
+      if (Number.isFinite(inferenceSteps) && els.inferenceSteps.value.trim()) payload.num_inference_steps = inferenceSteps;
+      if (Number.isFinite(seed) && els.seed.value.trim()) payload.seed = seed;
+      if (mode) payload.mode = mode;
+
+      if (state.videoMode === "image") {
+        const image = els.videoImageUrl.value.trim() || state.videoDataUris[0] || "";
+        if (!image) throw new Error("图生视频需要输入图片 URL 或上传图片");
+        payload.image = image;
+      }
+
+      if (state.videoMode === "multi" || state.videoMode === "keyframes") {
+        const imageList = [...lines(els.videoImageUrls.value), ...state.videoDataUris];
+        if (!imageList.length) throw new Error("多图视频或关键帧需要至少一张图片 URL 或上传图片");
+        payload.extra_body = {
+          ...extraBody,
+          image: imageList
+        };
+        if (state.videoMode === "keyframes") {
+          payload.extra_body.mode = "keyframes";
+        }
+      } else if (Object.keys(extraBody).length) {
+        payload.extra_body = extraBody;
+      }
+
+      return payload;
+    }
+
+    async function apiFetch(path, options = {}, timeout = 360000) {
+      const token = requireToken();
+      const controller = new AbortController();
+      const timer = window.setTimeout(() => controller.abort(), timeout);
+      try {
+        const response = await fetch(`${normalizeBaseUrl(state.apiBase)}${path}`, {
+          ...options,
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+            ...(options.headers || {})
+          },
+          signal: controller.signal
+        });
+        const text = await response.text();
+        let data = null;
+        try {
+          data = text ? JSON.parse(text) : null;
+        } catch (error) {
+          data = { raw: text };
+        }
+        if (!response.ok) {
+          const message = data?.error?.message || data?.message || text || `HTTP ${response.status}`;
+          const error = new Error(message);
+          error.status = response.status;
+          error.data = data;
+          throw error;
+        }
+        return data;
+      } finally {
+        window.clearTimeout(timer);
+      }
+    }
+
+    async function generateImage(event) {
+      event.preventDefault();
+      const button = $("#generateImage");
+      try {
+        const payload = buildImagePayload();
+        button.disabled = true;
+        button.textContent = "生成中...";
+        renderPayloadPreview(payload);
+        const data = await apiFetch("/v1/images/generations", {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+        const items = Array.isArray(data?.data) ? data.data : [];
+        if (!items.length) throw new Error("接口没有返回图片数据");
+        items.forEach((item, index) => {
+          const src = item.url || (item.b64_json ? `data:image/png;base64,${item.b64_json}` : "");
+          if (!src) return;
+          state.results.unshift({
+            id: crypto.randomUUID(),
+            type: "image",
+            title: payload.prompt,
+            src,
+            url: item.url || "",
+            b64: item.b64_json || "",
+            size: payload.size,
+            mode: state.imageMode,
+            createdAt: Date.now() + index,
+            raw: data
+          });
+        });
+        saveState();
+        renderAll();
+        showToast("图片生成完成");
+      } catch (error) {
+        showToast(error.message);
+      } finally {
+        button.disabled = false;
+        button.textContent = "生成图片";
+      }
+    }
+
+    async function createVideoTask(event) {
+      event.preventDefault();
+      const button = $("#generateVideo");
+      try {
+        const payload = buildVideoPayload();
+        button.disabled = true;
+        button.textContent = "创建中...";
+        renderPayloadPreview(payload);
+        const data = await createVideoWithRetry(payload, (attempt, maxAttempts) => {
+          button.textContent = attempt === 1 ? "创建中..." : `重试中 ${attempt}/${maxAttempts}...`;
+        });
+        const task = normalizeTask(data, payload.prompt, state.videoMode);
+        state.tasks.unshift(task);
+        saveState();
+        renderAll();
+        startPolling(task);
+        showToast("视频任务已创建");
+      } catch (error) {
+        showToast(error.message);
+      } finally {
+        button.disabled = false;
+        button.textContent = "创建视频任务";
+      }
+    }
+
+    async function createVideoWithRetry(payload, onAttempt) {
+      const maxAttempts = 3;
+      let lastError = null;
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        onAttempt?.(attempt, maxAttempts);
+        try {
+          return await apiFetch("/v1/videos", {
+            method: "POST",
+            body: JSON.stringify(payload)
+          });
+        } catch (error) {
+          lastError = error;
+          if (attempt >= maxAttempts || !isRetriableVideoCreateError(error)) break;
+          showToast("视频服务繁忙，稍后自动重试");
+          await wait(45000);
+        }
+      }
+      throw lastError;
+    }
+
+    function isRetriableVideoCreateError(error) {
+      const message = String(error?.message || "");
+      return error?.status === 500 ||
+        error?.status === 503 ||
+        message.includes("Service busy") ||
+        message.includes("upstream") ||
+        message.includes("do_request_failed");
+    }
+
+    function wait(ms) {
+      return new Promise((resolve) => window.setTimeout(resolve, ms));
+    }
+
+    function normalizeTask(data, prompt = "", mode = "text") {
+      const now = Date.now();
+      const taskId = data?.task_id || data?.id || "";
+      const videoId = data?.video_id || "";
+      return {
+        localId: data?.localId || taskId || videoId || crypto.randomUUID(),
+        task_id: taskId,
+        video_id: videoId,
+        prompt: prompt || data?.prompt || "",
+        mode,
+        status: data?.status || "queued",
+        progress: Number(data?.progress || 0),
+        seconds: data?.seconds || "",
+        size: data?.size || "",
+        videoUrl: data?.remixed_from_video_id || data?.url || "",
+        error: data?.error || null,
+        createdAt: data?.createdAt || now,
+        updatedAt: now,
+        raw: data
+      };
+    }
+
+    function mergeTask(update) {
+      const index = state.tasks.findIndex((item) => {
+        return item.localId === update.localId ||
+          (update.task_id && item.task_id === update.task_id) ||
+          (update.video_id && item.video_id === update.video_id);
+      });
+      if (index >= 0) {
+        state.tasks[index] = {
+          ...state.tasks[index],
+          ...update,
+          prompt: state.tasks[index].prompt || update.prompt,
+          mode: state.tasks[index].mode || update.mode
+        };
+      } else {
+        state.tasks.unshift(update);
+      }
+    }
+
+    async function pollTask(task) {
+      const query = task.video_id
+        ? `/agnesapi?video_id=${encodeURIComponent(task.video_id)}&model_name=${encodeURIComponent(VIDEO_MODEL)}`
+        : `/v1/videos/${encodeURIComponent(task.task_id)}`;
+      const data = await apiFetch(query, { method: "GET" }, 120000);
+      const update = normalizeTask({
+        ...data,
+        task_id: data?.task_id || data?.id || task.task_id,
+        video_id: data?.video_id || task.video_id,
+        localId: task.localId
+      }, task.prompt, task.mode);
+      mergeTask(update);
+      if (update.status === "completed" && update.videoUrl) {
+        addVideoResult(update);
+      }
+      saveState();
+      renderAll();
+      return update;
+    }
+
+    function startPolling(task) {
+      if ((!task.video_id && !task.task_id) || state.polling.has(task.localId)) return;
+      const run = async () => {
+        try {
+          const update = await pollTask(task);
+          if (update.status === "completed" || update.status === "failed") {
+            stopPolling(task.localId);
+          }
+        } catch (error) {
+          showToast(error.message);
+        }
+      };
+      run();
+      const timer = window.setInterval(run, POLL_INTERVAL);
+      state.polling.set(task.localId, timer);
+    }
+
+    function stopPolling(localId) {
+      const timer = state.polling.get(localId);
+      if (timer) window.clearInterval(timer);
+      state.polling.delete(localId);
+    }
+
+    function addVideoResult(task) {
+      if (!task.videoUrl) return;
+      const exists = state.results.some((item) => item.type === "video" && item.src === task.videoUrl);
+      if (exists) return;
+      state.results.unshift({
+        id: crypto.randomUUID(),
+        type: "video",
+        title: task.prompt || task.video_id || task.task_id,
+        src: task.videoUrl,
+        size: task.size,
+        mode: task.mode,
+        createdAt: Date.now(),
+        raw: task.raw
+      });
+    }
+
+    async function queryManual(kind) {
+      try {
+        const id = kind === "video" ? els.manualVideoId.value.trim() : els.manualTaskId.value.trim();
+        if (!id) throw new Error(kind === "video" ? "请输入 video_id" : "请输入 task_id");
+        const task = normalizeTask({
+          localId: id,
+          video_id: kind === "video" ? id : "",
+          task_id: kind === "task" ? id : "",
+          status: "queued",
+          progress: 0
+        });
+        const update = await pollTask(task);
+        mergeTask(update);
+        saveState();
+        renderAll();
+        showToast("查询完成");
+      } catch (error) {
+        showToast(error.message);
+      }
+    }
+
+    function renderAll() {
+      updateTokenStatus();
+      renderResults();
+      renderTasks();
+      renderMetrics();
+      renderPayloadPreview();
+    }
+
+    function renderMetrics() {
+      els.imageCount.textContent = state.results.filter((item) => item.type === "image").length;
+      els.videoCount.textContent = state.results.filter((item) => item.type === "video").length;
+      els.taskCount.textContent = state.tasks.length;
+    }
+
+    function renderResults() {
+      els.results.innerHTML = "";
+      els.emptyResults.classList.toggle("hidden", state.results.length > 0);
+      state.results.forEach((item) => {
+        const card = document.createElement("article");
+        card.className = "result-card";
+
+        const media = document.createElement("div");
+        media.className = "result-media";
+        if (item.type === "video") {
+          const video = document.createElement("video");
+          video.src = item.src;
+          video.controls = true;
+          video.playsInline = true;
+          media.appendChild(video);
+        } else {
+          const image = document.createElement("img");
+          image.src = item.src;
+          image.alt = item.title || "generated image";
+          image.loading = "lazy";
+          media.appendChild(image);
+        }
+
+        const body = document.createElement("div");
+        body.className = "result-body";
+        body.innerHTML = `
+          <div class="result-title" title="${escapeAttr(item.title || "")}">${escapeHtml(item.title || item.type)}</div>
+          <div class="result-meta">
+            <span class="chip">${item.type === "video" ? "视频" : "图片"}</span>
+            <span class="chip">${escapeHtml(item.mode || "text")}</span>
+            ${item.size ? `<span class="chip">${escapeHtml(item.size)}</span>` : ""}
+          </div>
+        `;
+
+        const actions = document.createElement("div");
+        actions.className = "actions";
+        actions.appendChild(actionButton("下载", () => downloadResult(item), "btn small"));
+        if (item.url || item.type === "video") {
+          actions.appendChild(actionButton("复制链接", () => copyText(item.url || item.src), "btn small"));
+        }
+        if (item.b64) {
+          actions.appendChild(actionButton("复制 Base64", () => copyText(item.b64), "btn small"));
+        }
+        actions.appendChild(actionButton("删除", () => deleteResult(item.id), "btn small ghost"));
+        body.appendChild(actions);
+
+        const details = document.createElement("details");
+        details.innerHTML = `<summary>响应 JSON</summary><pre>${escapeHtml(JSON.stringify(item.raw || {}, null, 2))}</pre>`;
+        body.appendChild(details);
+
+        card.appendChild(media);
+        card.appendChild(body);
+        els.results.appendChild(card);
+      });
+    }
+
+    function renderTasks() {
+      els.tasks.innerHTML = "";
+      els.emptyTasks.classList.toggle("hidden", state.tasks.length > 0);
+      state.tasks.forEach((task) => {
+        const item = document.createElement("article");
+        item.className = "task-item";
+        const statusClass = task.status === "completed" ? "good" : task.status === "failed" ? "bad" : "warn";
+        const progress = Math.max(0, Math.min(100, Number(task.progress || 0)));
+        item.innerHTML = `
+          <div class="task-main">
+            <div class="task-title">
+              <span class="chip ${statusClass}">${escapeHtml(task.status || "queued")}</span>
+              <strong title="${escapeAttr(task.prompt || "")}">${escapeHtml(task.prompt || task.video_id || task.task_id || "视频任务")}</strong>
+            </div>
+            <div class="progress" aria-label="progress"><span style="width: ${progress}%"></span></div>
+            <div class="result-meta">
+              ${task.video_id ? `<span class="chip">video_id: ${escapeHtml(task.video_id)}</span>` : ""}
+              ${task.task_id ? `<span class="chip">task_id: ${escapeHtml(task.task_id)}</span>` : ""}
+              ${task.size ? `<span class="chip">${escapeHtml(task.size)}</span>` : ""}
+              ${task.seconds ? `<span class="chip">${escapeHtml(task.seconds)}s</span>` : ""}
+            </div>
+          </div>
+        `;
+        const actions = document.createElement("div");
+        actions.className = "task-actions";
+        actions.appendChild(actionButton("刷新", async () => {
+          try {
+            await pollTask(task);
+            showToast("任务已刷新");
+          } catch (error) {
+            showToast(error.message);
+          }
+        }, "btn small"));
+        if (task.status !== "completed" && task.status !== "failed") {
+          actions.appendChild(actionButton(state.polling.has(task.localId) ? "轮询中" : "轮询", () => startPolling(task), "btn small"));
+        }
+        if (task.videoUrl) {
+          actions.appendChild(actionButton("播放", () => {
+            addVideoResult(task);
+            saveState();
+            renderAll();
+          }, "btn small"));
+          actions.appendChild(actionButton("下载", () => downloadUrl(task.videoUrl, "agnes-video.mp4"), "btn small"));
+        }
+        actions.appendChild(actionButton("删除", () => deleteTask(task.localId), "btn small ghost"));
+        item.appendChild(actions);
+        els.tasks.appendChild(item);
+      });
+    }
+
+    function actionButton(text, handler, className) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = className;
+      button.textContent = text;
+      button.addEventListener("click", handler);
+      return button;
+    }
+
+    function deleteResult(id) {
+      state.results = state.results.filter((item) => item.id !== id);
+      saveState();
+      renderAll();
+    }
+
+    function deleteTask(localId) {
+      stopPolling(localId);
+      state.tasks = state.tasks.filter((item) => item.localId !== localId);
+      saveState();
+      renderAll();
+    }
+
+    function renderPayloadPreview(payload) {
+      try {
+        const data = payload || (state.activeTab === "image" ? buildImagePayloadSoft() : buildVideoPayloadSoft());
+        els.payloadPreview.textContent = JSON.stringify(compactPreview(data), null, 2);
+      } catch (error) {
+        els.payloadPreview.textContent = JSON.stringify({ error: error.message }, null, 2);
+      }
+    }
+
+    function compactPreview(value) {
+      if (typeof value === "string") {
+        return value.length > 220 ? `${value.slice(0, 160)}... (${value.length} chars)` : value;
+      }
+      if (Array.isArray(value)) return value.map(compactPreview);
+      if (value && typeof value === "object") {
+        return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, compactPreview(item)]));
+      }
+      return value;
+    }
+
+    function buildImagePayloadSoft() {
+      try {
+        return buildImagePayload();
+      } catch (error) {
+        return {
+          model: IMAGE_MODEL,
+          prompt: els.imagePrompt.value.trim(),
+          size: imageSize(),
+          error: error.message
+        };
+      }
+    }
+
+    function buildVideoPayloadSoft() {
+      try {
+        return buildVideoPayload();
+      } catch (error) {
+        const [width, height] = videoSize();
+        return {
+          model: VIDEO_MODEL,
+          prompt: els.videoPrompt.value.trim(),
+          height,
+          width,
+          num_frames: Number(els.numFrames.value),
+          frame_rate: Number(els.frameRate.value),
+          error: error.message
+        };
+      }
+    }
+
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast("已复制");
+      } catch (error) {
+        showToast("复制失败");
+      }
+    }
+
+    async function downloadResult(item) {
+      const ext = item.type === "video" ? "mp4" : "png";
+      await downloadUrl(item.src, `agnes-${item.type}-${new Date(item.createdAt).toISOString().slice(0, 19).replace(/[:T]/g, "-")}.${ext}`);
+    }
+
+    async function downloadUrl(url, filename) {
+      try {
+        if (url.startsWith("data:")) {
+          const anchor = document.createElement("a");
+          anchor.href = url;
+          anchor.download = filename;
+          anchor.click();
+          return;
+        }
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("下载失败");
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = objectUrl;
+        anchor.download = filename;
+        anchor.click();
+        URL.revokeObjectURL(objectUrl);
+      } catch (error) {
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.target = "_blank";
+        anchor.rel = "noreferrer";
+        anchor.click();
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function escapeAttr(value) {
+      return escapeHtml(value).replaceAll("\n", " ");
+    }
+
+    function resetCurrentForm() {
+      if (state.activeTab === "image") {
+        els.imageForm.reset();
+        state.imageMode = "text";
+        state.imageDataUris = [];
+        els.imageThumbs.innerHTML = "";
+        setSegment("imageMode", "text");
+      } else {
+        els.videoForm.reset();
+        state.videoMode = "text";
+        state.videoDataUris = [];
+        els.videoThumbs.innerHTML = "";
+        setSegment("videoMode", "text");
+        els.durationPreset.value = "121:24";
+        updateCustomControls();
+      }
+      renderPayloadPreview();
+    }
+
+    async function handleVideoFiles() {
+      const files = Array.from(els.videoFiles.files || []);
+      state.videoDataUris = [];
+      els.videoThumbs.innerHTML = "";
+      for (const file of files) {
+        const dataUri = await readFileAsDataUri(file);
+        state.videoDataUris.push(dataUri);
+        const image = document.createElement("img");
+        image.className = "thumb";
+        image.src = dataUri;
+        image.alt = file.name;
+        els.videoThumbs.appendChild(image);
+      }
+      renderPayloadPreview();
+    }
+
+    async function handleImageFiles() {
+      const files = Array.from(els.imageFiles.files || []);
+      state.imageDataUris = [];
+      els.imageThumbs.innerHTML = "";
+      for (const file of files) {
+        const dataUri = await readFileAsDataUri(file);
+        state.imageDataUris.push(dataUri);
+        const image = document.createElement("img");
+        image.className = "thumb";
+        image.src = dataUri;
+        image.alt = file.name;
+        els.imageThumbs.appendChild(image);
+      }
+      renderPayloadPreview();
+    }
+
+    function readFileAsDataUri(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function bindEvents() {
+      els.tabs.forEach((button) => button.addEventListener("click", () => setActiveTab(button.dataset.tab)));
+      els.themeSelect.addEventListener("change", () => {
+        applyTheme(els.themeSelect.value);
+        saveState();
+      });
+      $$("[data-group]").forEach((group) => {
+        group.addEventListener("click", (event) => {
+          const button = event.target.closest("button[data-value]");
+          if (!button) return;
+          setSegment(group.dataset.group, button.dataset.value);
+        });
+      });
+
+      els.openSettings.addEventListener("click", openSettings);
+      els.closeSettings.addEventListener("click", closeSettings);
+      els.settingsDialog.addEventListener("click", (event) => {
+        if (event.target === els.settingsDialog) closeSettings();
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeSettings();
+      });
+
+      els.saveSettings.addEventListener("click", () => {
+        state.token = els.apiKey.value.trim();
+        state.apiBase = normalizeBaseUrl(els.apiBase.value);
+        if (!els.rememberToken.checked) {
+          localStorage.removeItem(STORAGE_KEY);
+        } else {
+          saveState();
+        }
+        updateTokenStatus();
+        closeSettings();
+        showToast("设置已保存");
+      });
+
+      els.clearToken.addEventListener("click", () => {
+        state.token = "";
+        saveState();
+        updateTokenStatus();
+        showToast("令牌已清除");
+      });
+
+      els.imageForm.addEventListener("submit", generateImage);
+      els.videoForm.addEventListener("submit", createVideoTask);
+      els.resetForm.addEventListener("click", resetCurrentForm);
+      els.imageFiles.addEventListener("change", handleImageFiles);
+      els.videoFiles.addEventListener("change", handleVideoFiles);
+      els.imageSizePreset.addEventListener("change", updateCustomControls);
+      els.videoSizePreset.addEventListener("change", updateCustomControls);
+      els.durationPreset.addEventListener("change", updateCustomControls);
+      els.clearResults.addEventListener("click", () => {
+        state.results = [];
+        saveState();
+        renderAll();
+      });
+      els.pollAllTasks.addEventListener("click", () => {
+        state.tasks.forEach((task) => startPolling(task));
+        showToast("已刷新任务队列");
+      });
+      els.queryVideoId.addEventListener("click", () => queryManual("video"));
+      els.queryTaskId.addEventListener("click", () => queryManual("task"));
+      els.copyImagePayload.addEventListener("click", () => copyText(JSON.stringify(buildImagePayloadSoft(), null, 2)));
+      els.copyVideoPayload.addEventListener("click", () => copyText(JSON.stringify(buildVideoPayloadSoft(), null, 2)));
+
+      [
+        els.imagePrompt,
+        els.imageUrls,
+        els.imageWidth,
+        els.imageHeight,
+        els.imageResponseFormat,
+        els.imageExtraBody,
+        els.videoPrompt,
+        els.negativePrompt,
+        els.videoImageUrl,
+        els.videoImageUrls,
+        els.videoFiles,
+        els.videoWidth,
+        els.videoHeight,
+        els.numFrames,
+        els.frameRate,
+        els.inferenceSteps,
+        els.seed,
+        els.videoModeField,
+        els.videoExtraBody
+      ].forEach((element) => {
+        element.addEventListener("input", renderPayloadPreview);
+      });
+    }
+
+    function init() {
+      loadState();
+      bindEvents();
+      applyTheme(state.theme);
+      updateImageMode();
+      updateVideoMode();
+      updateCustomControls();
+      renderAll();
+      state.tasks
+        .filter((task) => task.status !== "completed" && task.status !== "failed")
+        .forEach((task) => startPolling(task));
+    }
+
+    init();
+  </script>
+</body>
+</html>
