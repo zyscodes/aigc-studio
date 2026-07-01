@@ -500,6 +500,20 @@
       box-shadow: none;
     }
 
+    .btn.loading {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn.loading::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(110deg, transparent, rgba(255, 255, 255, .28), transparent);
+      transform: translateX(-100%);
+      animation: sweep 1.25s linear infinite;
+    }
+
     .actions {
       display: flex;
       gap: 10px;
@@ -657,6 +671,97 @@
       transform: translateY(-2px);
     }
 
+    .loading-card {
+      position: relative;
+      border-color: color-mix(in srgb, var(--accent) 42%, var(--line));
+      background:
+        linear-gradient(180deg, color-mix(in srgb, var(--paper-solid) 88%, var(--accent) 12%), var(--paper-solid));
+      box-shadow: 0 22px 60px color-mix(in srgb, var(--accent) 18%, transparent);
+    }
+
+    .loading-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(110deg, transparent 0%, rgba(255, 255, 255, .12) 42%, transparent 72%);
+      transform: translateX(-100%);
+      animation: sweep 1.8s ease-in-out infinite;
+    }
+
+    .loading-media {
+      position: relative;
+      min-height: 0;
+      background:
+        radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--accent) 34%, transparent), transparent 28%),
+        radial-gradient(circle at 62% 58%, color-mix(in srgb, var(--accent-2) 22%, transparent), transparent 24%),
+        linear-gradient(135deg, var(--surface), var(--surface-2));
+    }
+
+    .loading-orbit {
+      width: 74px;
+      height: 74px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      border: 1px solid color-mix(in srgb, var(--accent) 42%, transparent);
+      background: color-mix(in srgb, var(--paper-solid) 42%, transparent);
+      box-shadow: 0 0 38px color-mix(in srgb, var(--accent) 30%, transparent);
+      animation: pulseGlow 1.8s ease-in-out infinite;
+    }
+
+    .loading-orbit::before {
+      content: "";
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 3px solid color-mix(in srgb, var(--accent) 26%, transparent);
+      border-top-color: var(--accent);
+      border-right-color: var(--accent-2);
+      animation: spin .9s linear infinite;
+    }
+
+    .loading-lines {
+      display: grid;
+      gap: 8px;
+    }
+
+    .loading-line {
+      height: 10px;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--surface), var(--surface-strong), var(--surface));
+      background-size: 220% 100%;
+      animation: shimmer 1.4s ease-in-out infinite;
+    }
+
+    .loading-line.short {
+      width: 58%;
+    }
+
+    .loading-dots {
+      display: inline-flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .loading-dots i {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: dotBounce 1s ease-in-out infinite;
+    }
+
+    .loading-dots i:nth-child(2) {
+      animation-delay: .15s;
+      background: var(--accent-2);
+    }
+
+    .loading-dots i:nth-child(3) {
+      animation-delay: .3s;
+      background: var(--accent-3);
+    }
+
     .result-media {
       aspect-ratio: 4 / 3;
       display: grid;
@@ -799,11 +904,22 @@
     }
 
     .progress span {
+      position: relative;
       display: block;
       height: 100%;
       width: 0;
       background: linear-gradient(90deg, var(--accent), var(--accent-2));
       transition: width .25s ease;
+      overflow: hidden;
+    }
+
+    .progress span::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .42), transparent);
+      transform: translateX(-100%);
+      animation: sweep 1.2s linear infinite;
     }
 
     .task-actions {
@@ -932,6 +1048,59 @@
       border: 1px solid var(--line);
       object-fit: cover;
       background: var(--surface-2);
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes sweep {
+      to {
+        transform: translateX(100%);
+      }
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: 120% 0;
+      }
+      100% {
+        background-position: -120% 0;
+      }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% {
+        transform: scale(.96);
+        opacity: .82;
+      }
+      50% {
+        transform: scale(1.04);
+        opacity: 1;
+      }
+    }
+
+    @keyframes dotBounce {
+      0%, 80%, 100% {
+        transform: translateY(0);
+        opacity: .48;
+      }
+      40% {
+        transform: translateY(-5px);
+        opacity: 1;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+      }
     }
 
     @media (max-width: 1120px) {
@@ -1408,6 +1577,7 @@
       apiBase: DEFAULT_BASE,
       imageDataUris: [],
       videoDataUris: [],
+      loadingJobs: [],
       results: [],
       tasks: [],
       polling: new Map()
@@ -1773,9 +1943,16 @@
     async function generateImage(event) {
       event.preventDefault();
       const button = $("#generateImage");
+      let loadingId = "";
       try {
         const payload = buildImagePayload();
+        loadingId = addLoadingJob({
+          type: "image",
+          title: payload.prompt,
+          caption: state.imageMode === "image" ? "正在重绘参考图" : "正在生成图片"
+        });
         button.disabled = true;
+        button.classList.add("loading");
         button.textContent = "生成中...";
         renderPayloadPreview(payload);
         const data = await apiFetch("/v1/images/generations", {
@@ -1801,12 +1978,16 @@
           });
         });
         saveState();
+        removeLoadingJob(loadingId);
+        loadingId = "";
         renderAll();
         showToast("图片生成完成");
       } catch (error) {
         showToast(error.message);
       } finally {
+        removeLoadingJob(loadingId);
         button.disabled = false;
+        button.classList.remove("loading");
         button.textContent = "生成图片";
       }
     }
@@ -1814,15 +1995,27 @@
     async function createVideoTask(event) {
       event.preventDefault();
       const button = $("#generateVideo");
+      let loadingId = "";
       try {
         const payload = buildVideoPayload();
+        loadingId = addLoadingJob({
+          type: "video",
+          title: payload.prompt,
+          caption: "正在创建视频任务"
+        });
         button.disabled = true;
+        button.classList.add("loading");
         button.textContent = "创建中...";
         renderPayloadPreview(payload);
         const data = await createVideoWithRetry(payload, (attempt, maxAttempts) => {
           button.textContent = attempt === 1 ? "创建中..." : `重试中 ${attempt}/${maxAttempts}...`;
+          updateLoadingJob(loadingId, {
+            caption: attempt === 1 ? "正在创建视频任务" : `服务繁忙，自动重试 ${attempt}/${maxAttempts}`
+          });
         });
         const task = normalizeTask(data, payload.prompt, state.videoMode);
+        removeLoadingJob(loadingId);
+        loadingId = "";
         state.tasks.unshift(task);
         saveState();
         renderAll();
@@ -1831,7 +2024,9 @@
       } catch (error) {
         showToast(error.message);
       } finally {
+        removeLoadingJob(loadingId);
         button.disabled = false;
+        button.classList.remove("loading");
         button.textContent = "创建视频任务";
       }
     }
@@ -1989,6 +2184,34 @@
       }
     }
 
+    function addLoadingJob(job) {
+      const id = crypto.randomUUID();
+      state.loadingJobs.unshift({
+        id,
+        type: job.type || "image",
+        title: job.title || "正在生成",
+        caption: job.caption || "请稍等",
+        createdAt: Date.now()
+      });
+      renderResults();
+      return id;
+    }
+
+    function updateLoadingJob(id, patch) {
+      if (!id) return;
+      const job = state.loadingJobs.find((item) => item.id === id);
+      if (!job) return;
+      Object.assign(job, patch);
+      renderResults();
+    }
+
+    function removeLoadingJob(id) {
+      if (!id) return;
+      const before = state.loadingJobs.length;
+      state.loadingJobs = state.loadingJobs.filter((item) => item.id !== id);
+      if (state.loadingJobs.length !== before) renderResults();
+    }
+
     function renderAll() {
       updateTokenStatus();
       renderResults();
@@ -2005,7 +2228,11 @@
 
     function renderResults() {
       els.results.innerHTML = "";
-      els.emptyResults.classList.toggle("hidden", state.results.length > 0);
+      const hasVisibleCards = state.loadingJobs.length > 0 || state.results.length > 0;
+      els.emptyResults.classList.toggle("hidden", hasVisibleCards);
+      state.loadingJobs.forEach((job) => {
+        els.results.appendChild(renderLoadingCard(job));
+      });
       state.results.forEach((item) => {
         const card = document.createElement("article");
         card.className = "result-card";
@@ -2057,6 +2284,34 @@
         card.appendChild(body);
         els.results.appendChild(card);
       });
+    }
+
+    function renderLoadingCard(job) {
+      const card = document.createElement("article");
+      card.className = "result-card loading-card";
+
+      const media = document.createElement("div");
+      media.className = "result-media loading-media";
+      media.innerHTML = `<div class="loading-orbit" aria-hidden="true"></div>`;
+
+      const body = document.createElement("div");
+      body.className = "result-body";
+      body.innerHTML = `
+        <div class="result-title" title="${escapeAttr(job.title)}">${escapeHtml(job.title)}</div>
+        <div class="result-meta">
+          <span class="chip warn">${job.type === "video" ? "视频生成中" : "图片生成中"}</span>
+          <span class="chip">${escapeHtml(job.caption)}</span>
+          <span class="loading-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        </div>
+        <div class="loading-lines" aria-hidden="true">
+          <span class="loading-line"></span>
+          <span class="loading-line short"></span>
+        </div>
+      `;
+
+      card.appendChild(media);
+      card.appendChild(body);
+      return card;
     }
 
     function renderTasks() {
