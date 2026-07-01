@@ -373,6 +373,12 @@
       font-weight: 500;
     }
 
+    .field-note {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
     input,
     textarea,
     select {
@@ -1338,7 +1344,8 @@
                 <textarea id="videoImageUrls" placeholder="https://example.com/image1.png&#10;https://example.com/image2.png"></textarea>
               </label>
               <div class="drop-zone hidden" id="videoFilesBlock">
-                <span class="label-line">本地参考图 <span class="hint">转为 Data URI Base64</span></span>
+                <span class="label-line">本地参考图 <span class="hint">仅预览</span></span>
+                <span class="field-note">视频接口需要公网图片 URL，Base64 / Data URI 不会提交。</span>
                 <input id="videoFiles" type="file" accept="image/*" multiple>
                 <div class="thumb-row" id="videoThumbs"></div>
               </div>
@@ -1811,6 +1818,17 @@
       return els.videoSizePreset.value.split("x").map(Number);
     }
 
+    function isPublicUrl(value) {
+      return /^https?:\/\//i.test(String(value || "").trim());
+    }
+
+    function validateVideoImageUrl(value, label) {
+      if (!isPublicUrl(value)) {
+        throw new Error(`${label}需要可公开访问的图片 URL，Base64 / Data URI 不能用于 Agnes 视频接口`);
+      }
+      return value.trim();
+    }
+
     function buildImagePayload() {
       const prompt = els.imagePrompt.value.trim();
       if (!prompt) throw new Error("请填写图片提示词");
@@ -1884,17 +1902,27 @@
       if (mode) payload.mode = mode;
 
       if (state.videoMode === "image") {
-        const image = els.videoImageUrl.value.trim() || state.videoDataUris[0] || "";
-        if (!image) throw new Error("图生视频需要输入图片 URL 或上传图片");
-        payload.image = image;
+        const image = els.videoImageUrl.value.trim();
+        if (!image) {
+          if (state.videoDataUris.length) {
+            throw new Error("图生视频不能直接使用本地 Base64 图片，请先填入公网图片 URL");
+          }
+          throw new Error("图生视频需要输入公网图片 URL");
+        }
+        payload.image = validateVideoImageUrl(image, "图生视频");
       }
 
       if (state.videoMode === "multi" || state.videoMode === "keyframes") {
-        const imageList = [...lines(els.videoImageUrls.value), ...state.videoDataUris];
-        if (!imageList.length) throw new Error("多图视频或关键帧需要至少一张图片 URL 或上传图片");
+        const imageList = lines(els.videoImageUrls.value);
+        if (!imageList.length) {
+          if (state.videoDataUris.length) {
+            throw new Error("多图视频或关键帧不能直接使用本地 Base64 图片，请填入公网图片 URL");
+          }
+          throw new Error("多图视频或关键帧需要至少一张公网图片 URL");
+        }
         payload.extra_body = {
           ...extraBody,
-          image: imageList
+          image: imageList.map((item) => validateVideoImageUrl(item, "参考图片"))
         };
         if (state.videoMode === "keyframes") {
           payload.extra_body.mode = "keyframes";
@@ -2266,6 +2294,9 @@
 
         const actions = document.createElement("div");
         actions.className = "actions";
+        if (item.type === "image") {
+          actions.appendChild(actionButton("图生视频", () => useImageForVideo(item), "btn small"));
+        }
         actions.appendChild(actionButton("下载", () => downloadResult(item), "btn small"));
         if (item.url || item.type === "video") {
           actions.appendChild(actionButton("复制链接", () => copyText(item.url || item.src), "btn small"));
@@ -2377,6 +2408,23 @@
       state.results = state.results.filter((item) => item.id !== id);
       saveState();
       renderAll();
+    }
+
+    function useImageForVideo(item) {
+      const source = item.url || item.src || "";
+      if (!isPublicUrl(source)) {
+        showToast("当前图片是 Base64，视频接口需要公网图片 URL");
+        return;
+      }
+      setActiveTab("video");
+      setSegment("videoMode", "image");
+      els.videoImageUrl.value = source;
+      if (!els.videoPrompt.value.trim()) {
+        els.videoPrompt.value = "Animate this image with subtle natural motion, cinematic camera movement, stable subject identity, smooth lighting";
+      }
+      renderPayloadPreview();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      showToast("已填入图生视频图片 URL");
     }
 
     function deleteTask(localId) {
